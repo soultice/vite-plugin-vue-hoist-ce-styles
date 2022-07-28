@@ -1,0 +1,23 @@
+{
+  "name": "vite-plugin-vue-hoist-ce-styles",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soultice/vite-plugin-vue-hoist-ce-styles.git"
+  },
+  "keywords": [
+    "vite",
+    "vue",
+    "custom-element",
+    "CE"
+  ],
+  "author": "soultice@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/soultice/vite-plugin-vue-hoist-ce-styles/issues"
+  },
+  "homepage": "https://github.com/soultice/vite-plugin-vue-hoist-ce-styles#readme",
+  "workspaces": [
+    "packages/plugin"
+  ]
+}

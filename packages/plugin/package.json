@@ -1,0 +1,36 @@
+{
+  "name": "vite-plugin-vue-hoist-ce-styles",
+  "version": "0.0.1",
+  "description": "A vite/vue plugin to circumvent a bug on Vue3",
+  "main": "dist/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "tsc": "tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soultice/vite-plugin-vue-hoist-ce-styles.git"
+  },
+  "keywords": [
+    "vite",
+    "vue",
+    "custom-element",
+    "CE"
+  ],
+  "author": "soultice@gmail.com",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/soultice/vite-plugin-vue-hoist-ce-styles/issues"
+  },
+  "homepage": "https://github.com/soultice/vite-plugin-vue-hoist-ce-styles#readme",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^8.3.4",
+    "@types/acorn": "^6.0.0",
+    "esbuild": "^0.14.50",
+    "rollup": "^2.77.2",
+    "tslib": "^2.4.0",
+    "typescript": "^4.7.4",
+    "vite": "^3.0.3"
+  }
+}
