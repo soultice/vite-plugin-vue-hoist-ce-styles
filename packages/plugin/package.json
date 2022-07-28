@@ -23,11 +23,9 @@
   "bugs": {
     "url": "https://github.com/soultice/vite-plugin-vue-hoist-ce-styles/issues"
   },
-  "homepage": "https://github.com/soultice/vite-plugin-vue-hoist-ce-styles#readme",
+  "homepage": "https://github.com/soultice/vite-plugin-vue-hoist-ce-styles/tree/main/packages/plugin",
   "devDependencies": {
     "@rollup/plugin-typescript": "^8.3.4",
-    "@types/acorn": "^6.0.0",
-    "esbuild": "^0.14.50",
     "rollup": "^2.77.2",
     "tslib": "^2.4.0",
     "typescript": "^4.7.4",

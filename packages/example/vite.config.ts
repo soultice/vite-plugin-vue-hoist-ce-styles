@@ -6,4 +6,17 @@ import { hoistCeStyles } from 'vite-plugin-vue-hoist-ce-styles';
 export default defineConfig({
   clearScreen: false,
   plugins: [vue({ customElement: true }), hoistCeStyles()],
+  build: {
+    target: 'esnext',
+    minify: false,
+    rollupOptions: {
+      output: {
+        minifyInternalExports: false,
+        format: 'esm',
+        entryFileNames: `[name].js`,
+        chunkFileNames: `[name].js`,
+        assetFileNames: `assets/[name].[ext]`,
+      },
+    },
+  },
 });

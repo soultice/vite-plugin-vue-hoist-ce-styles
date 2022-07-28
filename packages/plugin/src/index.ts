@@ -5,19 +5,19 @@ const directRe = /\&direct/;
 const styleRe = /(\.css|\&type\=style)/;
 const indexRe = /index.*.js/;
 
+const PLACEHOLDER = "ANCHOR"
 const virtualId = 'virtual:hoist-ce-styles/css-helper';
 
 enum ExportDeclaration {
   DEFAULT = 'ExportDefaultDeclaration',
 }
 
-interface StyleCache {
-  [origin: string]: ModuleCode;
-}
+type StyleCache = ModuleCode[];
 
-interface ModuleCode {
+type ModuleCode = {
+  origin: string;
   code: string;
-}
+};
 
 function invalidateStyles(server: ViteDevServer, id: string): void {
   const { moduleGraph, ws } = server;
@@ -34,13 +34,11 @@ function invalidateStyles(server: ViteDevServer, id: string): void {
 }
 
 function toStyleCode(styleCache: StyleCache) {
-  return Object.keys(styleCache)
-    .map((c) => styleCache[c].code)
-    .join('');
+  return styleCache.map(c => c.code).join('')
 }
 
 export function hoistCeStyles(): Plugin {
-  const styleCache: StyleCache = {};
+  const styleCache: StyleCache = [];
   let server: ViteDevServer;
   let config: ResolvedConfig;
   return {
@@ -59,7 +57,10 @@ export function hoistCeStyles(): Plugin {
     },
     load(id) {
       if (id === virtualId) {
-        return `export const styles = ${JSON.stringify(toStyleCode(styleCache))}`;
+        if (config.command === 'serve') {
+          return `export const styles = ${JSON.stringify(toStyleCode(styleCache))}`;
+        }
+        return `export const styles = ${PLACEHOLDER}`
       }
     },
     async transform(code, id) {
@@ -72,7 +73,13 @@ export function hoistCeStyles(): Plugin {
       if (ast.body[0]?.type === ExportDeclaration.DEFAULT) {
         const styleCode = ast.body[0].declaration.value;
         if (styleCode) {
-          styleCache[id] = { code: styleCode };
+          const cachePos = styleCache.findIndex((c) => c.code === styleCode);
+          const cacheObj = { origin: id, code: styleCode };
+          if (cachePos >= 0) {
+            styleCache[cachePos] = cacheObj;
+          } else {
+            styleCache.push(cacheObj);
+          }
           if (config.command === 'serve') {
             invalidateStyles(server, virtualId);
           }
@@ -86,15 +93,11 @@ export function hoistCeStyles(): Plugin {
     generateBundle(_, bundle) {
       // for the bundle step we replace all styles that we have in our cache
       // with the complete styles
-      for (const [b, e] of Object.entries(bundle)) {
+      for (const [b, c] of Object.entries(bundle)) {
         const jsOutFile = indexRe.test(b);
         if (jsOutFile) {
-          const chunk = e as OutputChunk;
-          for (const [_, style] of Object.entries(styleCache)) {
-            if (chunk.code.includes(style.code)) {
-              chunk.code = chunk.code.replace(style.code, toStyleCode(styleCache));
-            }
-          }
+          const chunk = c as OutputChunk;
+          (bundle[b] as OutputChunk).code = chunk.code.replace(new RegExp(PLACEHOLDER, 'g'), JSON.stringify(toStyleCode(styleCache)))
         }
       }
     },

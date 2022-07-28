@@ -16,7 +16,8 @@ import HelloWorld from './components/HelloWorld.vue'
   <HelloWorld msg="Vite + Vue" />
 </template>
 
-<style>
+<style lang="scss">
+@import 'scss/one.scss';
 :host {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
@@ -37,9 +38,6 @@ h1 {
   font-size: 3.2em;
   line-height: 1.1;
 }
-</style>
-
-<style scoped>
 .logo {
   height: 6em;
   padding: 1.5em;
