@@ -75,8 +75,9 @@ export function hoistCeStyles({ hostComponent }: { hostComponent: string }): Plu
       if (ast.body[0]?.type === ExportDeclaration.DEFAULT) {
         const styleCode = ast.body[0].declaration.value;
         if (styleCode) {
-          const cachePos = styleCache.findIndex((c) => c.code === styleCode);
+          const cachePos = styleCache.findIndex((c) => c.origin === id);
           const cacheObj = { origin: id, code: styleCode };
+          console.log('styleCacheLen', styleCache.length)
           if (cachePos >= 0) {
             styleCache[cachePos] = cacheObj;
           } else {
