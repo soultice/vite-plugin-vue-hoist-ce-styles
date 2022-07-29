@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import DeepSubComponentVue from './DeepSubComponent.vue';
+
 import { ref } from 'vue'
 
 defineProps<{ msg: string }>()
@@ -29,6 +31,7 @@ const count = ref(0)
     in your IDE for a better DX
   </p>
   <p class="read-the-docs">Click on the Vite and Vue logos to learn more</p>
+  <DeepSubComponentVue msg="this is a sub-sub-component"></DeepSubComponentVue>
 </template>
 
 <style scoped>

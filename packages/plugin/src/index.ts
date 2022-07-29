@@ -5,7 +5,9 @@ const directRe = /\&direct/;
 const styleRe = /(\.css|\&type\=style)/;
 const indexRe = /index.*.js/;
 
-const PLACEHOLDER = "ANCHOR"
+const PLACEHOLDER_BEGIN = 'ANCHOR:BEGIN';
+const PLACEHOLDER_END = 'ANCHOR:END';
+const placeHolderRe = /\"ANCHOR\:BEGIN(.*?)ANCHOR\:END\"/g;
 const virtualId = 'virtual:hoist-ce-styles/css-helper';
 
 enum ExportDeclaration {
@@ -34,11 +36,12 @@ function invalidateStyles(server: ViteDevServer, id: string): void {
 }
 
 function toStyleCode(styleCache: StyleCache) {
-  return styleCache.map(c => c.code).join('')
+  return styleCache.map((c) => c.code).join('');
 }
 
-export function hoistCeStyles(): Plugin {
+export function hoistCeStyles({ entryComponent }: { entryComponent: string }): Plugin {
   const styleCache: StyleCache = [];
+  const entryComponentRe = new RegExp(entryComponent);
   let server: ViteDevServer;
   let config: ResolvedConfig;
   return {
@@ -60,7 +63,6 @@ export function hoistCeStyles(): Plugin {
         if (config.command === 'serve') {
           return `export const styles = ${JSON.stringify(toStyleCode(styleCache))}`;
         }
-        return `export const styles = ${PLACEHOLDER}`
       }
     },
     async transform(code, id) {
@@ -80,11 +82,19 @@ export function hoistCeStyles(): Plugin {
           } else {
             styleCache.push(cacheObj);
           }
+          let code
           if (config.command === 'serve') {
             invalidateStyles(server, virtualId);
+            if (entryComponentRe.test(id)) {
+              code = `import { styles } from "${virtualId}"\nexport default styles`;
+            } else {
+              code = `export default ''`;
+            }
+          } else {
+            code =  `const styles = "${PLACEHOLDER_BEGIN}${id}${PLACEHOLDER_END}"\nexport default styles`;
           }
           return {
-            code: `import { styles } from "${virtualId}"\nexport default styles`,
+            code,
             map: null,
           };
         }
@@ -96,8 +106,16 @@ export function hoistCeStyles(): Plugin {
       for (const [b, c] of Object.entries(bundle)) {
         const jsOutFile = indexRe.test(b);
         if (jsOutFile) {
-          const chunk = c as OutputChunk;
-          (bundle[b] as OutputChunk).code = chunk.code.replace(new RegExp(PLACEHOLDER, 'g'), JSON.stringify(toStyleCode(styleCache)))
+          let chunk = c as OutputChunk;
+          const matches = chunk.code.matchAll(placeHolderRe);
+          for (const m of matches) {
+            if (entryComponentRe.test(m[1])) {
+              chunk.code = chunk.code.replace(m[0], JSON.stringify(toStyleCode(styleCache)));
+            } else {
+              chunk.code = chunk.code.replace(m[0], "''");
+            }
+            bundle[b] = chunk;
+          }
         }
       }
     },
