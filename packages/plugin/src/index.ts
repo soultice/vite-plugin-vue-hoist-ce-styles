@@ -8,6 +8,10 @@ const indexRe = /index.*.js/;
 const PLACEHOLDER_BEGIN = 'ANCHOR:BEGIN';
 const PLACEHOLDER_END = 'ANCHOR:END';
 const placeHolderRe = /\"ANCHOR\:BEGIN(.*?)ANCHOR\:END\"/g;
+
+const assetUrlRE = /__VITE_ASSET__([a-z\d]{8})__(?:\$_(.*?)__)?/g
+const assetRetrievalRE = /const __([a-z\d]{8})__ \= (.*?);/g
+
 const virtualId = 'virtual:hoist-ce-styles/css-helper';
 
 enum ExportDeclaration {
@@ -42,6 +46,7 @@ function toStyleCode(styleCache: StyleCache) {
 export function hoistCeStyles({ hostComponent }: { hostComponent: string }): Plugin {
   const styleCache: StyleCache = [];
   const hostComponentRe = new RegExp(hostComponent);
+  let refMap = new Map<string, string>();
   let server: ViteDevServer;
   let config: ResolvedConfig;
   return {
@@ -74,6 +79,19 @@ export function hoistCeStyles({ hostComponent }: { hostComponent: string }): Plu
       // we overwrite the styles with the export of our virtual module
       if (ast.body[0]?.type === ExportDeclaration.DEFAULT) {
         const styleCode = ast.body[0].declaration.value;
+
+        const localAssetRefs: Map<string, string> = new Map()
+        let assetRefs: RegExpExecArray | null = styleCode.matchAll(assetUrlRE)
+        if (assetRefs != null) {
+          for (const r of assetRefs) {
+            localAssetRefs.set(r[1], r[0]) 
+          }
+        }
+        const refCode = [...localAssetRefs].reduce(function (current, [hash, linkedRef]) {
+          return `\n${current}const __${hash}__ = ${linkedRef}`
+        }, '')
+        refMap = new Map([...refMap, ...localAssetRefs])
+
         if (styleCode) {
           const cachePos = styleCache.findIndex((c) => c.origin === id);
           const cacheObj = { origin: id, code: styleCode };
@@ -91,26 +109,35 @@ export function hoistCeStyles({ hostComponent }: { hostComponent: string }): Plu
               code = `export default ''`;
             }
           } else {
-            code =  `const styles = "${PLACEHOLDER_BEGIN}${id}${PLACEHOLDER_END}"\nexport default styles`;
+            code =  `const styles = "${PLACEHOLDER_BEGIN}${id}${PLACEHOLDER_END}";\nexport default styles;${refCode}`;
           }
           return {
             code,
+            moduleSideEffects: 'no-treeshake',
             map: null,
           };
         }
       }
     },
     generateBundle(_, bundle) {
-      // for the bundle step we replace all styles that we have in our cache
-      // with the complete styles
+      // for the bundle step we replace the styles of hostComponent with all found styles
       for (const [b, c] of Object.entries(bundle)) {
         const jsOutFile = indexRe.test(b);
         if (jsOutFile) {
+          let styleCode = JSON.stringify(toStyleCode(styleCache))
           let chunk = c as OutputChunk;
+
+          // re-add asset urls and clean up afterwards
+          const assets = chunk.code.matchAll(assetRetrievalRE);
+          for (const asset of assets) {
+            styleCode = styleCode.replace(refMap.get(String(asset[1]))!, asset[2])
+          }
+          chunk.code = chunk.code.replace(assetRetrievalRE, '')
+
           const matches = chunk.code.matchAll(placeHolderRe);
           for (const m of matches) {
             if (hostComponentRe.test(m[1])) {
-              chunk.code = chunk.code.replace(m[0], JSON.stringify(toStyleCode(styleCache)));
+              chunk.code = chunk.code.replace(m[0], styleCode);
             } else {
               chunk.code = chunk.code.replace(m[0], "''");
             }
