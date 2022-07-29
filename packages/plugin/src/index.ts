@@ -77,7 +77,6 @@ export function hoistCeStyles({ hostComponent }: { hostComponent: string }): Plu
         if (styleCode) {
           const cachePos = styleCache.findIndex((c) => c.origin === id);
           const cacheObj = { origin: id, code: styleCode };
-          console.log('styleCacheLen', styleCache.length)
           if (cachePos >= 0) {
             styleCache[cachePos] = cacheObj;
           } else {
