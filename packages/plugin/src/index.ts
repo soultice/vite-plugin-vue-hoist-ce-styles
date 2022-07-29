@@ -39,9 +39,9 @@ function toStyleCode(styleCache: StyleCache) {
   return styleCache.map((c) => c.code).join('');
 }
 
-export function hoistCeStyles({ entryComponent }: { entryComponent: string }): Plugin {
+export function hoistCeStyles({ hostComponent }: { hostComponent: string }): Plugin {
   const styleCache: StyleCache = [];
-  const entryComponentRe = new RegExp(entryComponent);
+  const hostComponentRe = new RegExp(hostComponent);
   let server: ViteDevServer;
   let config: ResolvedConfig;
   return {
@@ -85,7 +85,7 @@ export function hoistCeStyles({ entryComponent }: { entryComponent: string }): P
           let code
           if (config.command === 'serve') {
             invalidateStyles(server, virtualId);
-            if (entryComponentRe.test(id)) {
+            if (hostComponentRe.test(id)) {
               code = `import { styles } from "${virtualId}"\nexport default styles`;
             } else {
               code = `export default ''`;
@@ -109,7 +109,7 @@ export function hoistCeStyles({ entryComponent }: { entryComponent: string }): P
           let chunk = c as OutputChunk;
           const matches = chunk.code.matchAll(placeHolderRe);
           for (const m of matches) {
-            if (entryComponentRe.test(m[1])) {
+            if (hostComponentRe.test(m[1])) {
               chunk.code = chunk.code.replace(m[0], JSON.stringify(toStyleCode(styleCache)));
             } else {
               chunk.code = chunk.code.replace(m[0], "''");

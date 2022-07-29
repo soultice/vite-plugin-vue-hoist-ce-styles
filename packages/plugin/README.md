@@ -5,7 +5,6 @@
 
 - CSS imports outside of SFCs won't work. E.g. the default `import 'styles.css'` in main.ts will work in dev but break the build.
 - Your bundle must be named `index.%%ANYTHING%%.js` as the plugin is testing against `/index.*.js` to replace styles in the final bundle
-- ❗ You should not use this for large applications right now as the CSS from the final bundle is injected anywhere when matching CSS is found. Large CSS files will probably impact performance 
 - Plugin has no unit tests right now, and is largely untested, use with caution
 
 ### Installation
@@ -26,7 +25,7 @@ Also make sure that `customElement: true` is passed to the vue plugin
 ```typescript
 import { hoistCeStyles } from 'vite-plugin-vue-hoist-ce-styles';
 
-plugins: [vue({ customElement: true }), hoistCeStyles()],
+plugins: [vue({ customElement: true }), hoistCeStyles({hostComponent: 'App.vue'})],
 ```
 
 

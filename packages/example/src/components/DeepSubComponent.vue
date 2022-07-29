@@ -13,7 +13,7 @@ const count = ref(0)
 <style scoped>
 
 .foo {
-  color: deeppink;
+  color: rgb(44, 146, 35);
 }
 
 </style>

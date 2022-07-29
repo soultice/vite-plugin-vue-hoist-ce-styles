@@ -5,7 +5,7 @@ import { hoistCeStyles } from 'vite-plugin-vue-hoist-ce-styles';
 // https://vitejs.dev/config/
 export default defineConfig({
   clearScreen: false,
-  plugins: [vue({ customElement: true }), hoistCeStyles({ entryComponent: 'App.vue'})],
+  plugins: [vue({ customElement: true }), hoistCeStyles({ hostComponent: 'App.vue'})],
   build: {
     target: 'esnext',
     minify: false,
