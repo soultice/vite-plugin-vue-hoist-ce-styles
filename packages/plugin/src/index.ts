@@ -144,11 +144,11 @@ export function hoistCeStyles({ hostComponent }: { hostComponent: string }): Plu
           chunk.code = chunk.code.replace(assetRetrievalRE, '');
 
           const componentStyles = chunk.code.matchAll(placeHolderRe);
-          for (const m of componentStyles) {
-            if (hostComponentRe.test(m[1])) {
-              chunk.code = chunk.code.replace(m[0], styleCode);
+          for (const [anchor, id ]of componentStyles) {
+            if (hostComponentRe.test(id)) {
+              chunk.code = chunk.code.replace(anchor, styleCode);
             } else {
-              chunk.code = chunk.code.replace(m[0], "''");
+              chunk.code = chunk.code.replace(anchor, "''");
             }
             bundle[b] = chunk;
           }
