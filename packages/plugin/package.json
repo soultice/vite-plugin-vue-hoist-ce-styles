@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-vue-hoist-ce-styles",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A vite/vue plugin to circumvent a bug on Vue3",
   "main": "dist/index.js",
   "scripts": {
