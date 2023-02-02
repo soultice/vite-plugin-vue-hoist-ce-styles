@@ -3,7 +3,7 @@ import type { OutputChunk } from 'rollup';
 
 const directRe = /\&direct/;
 const styleRe = /(\.css|\&type\=style)/;
-const indexRe = /index.*.js/;
+const defaultIndexRe = /index.*.js/;
 
 const PLACEHOLDER_BEGIN = 'ANCHOR:BEGIN';
 const PLACEHOLDER_END = 'ANCHOR:END';
@@ -44,12 +44,12 @@ function toStyleCode(styleCache: StyleCache) {
 }
 
 function toRefCode(referenceMap: Map<string, string>) {
-  return [...referenceMap].reduce((current, [hash, linkedRef]) => 
+  return [...referenceMap].reduce((current, [hash, linkedRef]) =>
     `${current}\nconst __${hash}__ = ${linkedRef}`
-  , '');
+    , '');
 }
 
-export function hoistCeStyles({ hostComponent }: { hostComponent: string }): Plugin {
+export function hoistCeStyles({ hostComponent, indexRe = defaultIndexRe }: { hostComponent: string, indexRe: RegExp }): Plugin {
   const styleCache: StyleCache = [];
   const hostComponentRe = new RegExp(hostComponent);
   let refMap = new Map<string, string>();
@@ -144,7 +144,7 @@ export function hoistCeStyles({ hostComponent }: { hostComponent: string }): Plu
           chunk.code = chunk.code.replace(assetRetrievalRE, '');
 
           const componentStyles = chunk.code.matchAll(placeHolderRe);
-          for (const [anchor, id ]of componentStyles) {
+          for (const [anchor, id] of componentStyles) {
             if (hostComponentRe.test(id)) {
               chunk.code = chunk.code.replace(anchor, styleCode);
             } else {
