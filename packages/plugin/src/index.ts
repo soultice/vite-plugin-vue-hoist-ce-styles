@@ -49,7 +49,7 @@ function toRefCode(referenceMap: Map<string, string>) {
     , '');
 }
 
-export function hoistCeStyles({ hostComponent, indexRe = defaultIndexRe }: { hostComponent: string, indexRe: RegExp }): Plugin {
+export function hoistCeStyles({ hostComponent, indexRe = defaultIndexRe }: { hostComponent: string; indexRe: RegExp }): Plugin {
   const styleCache: StyleCache = [];
   const hostComponentRe = new RegExp(hostComponent);
   let refMap = new Map<string, string>();
